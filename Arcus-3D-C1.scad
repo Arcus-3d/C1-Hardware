@@ -4,10 +4,10 @@
 // darenschwenke@gmail.com
 
 $fn=120; // circle complexity.  Turn down while editing, up while rendering.
-//$fn=30;
+//$fn=60;
 roswell_constant=19.47; // there is a geometric reason this angle works, but I'm too lazy to find it.
 
-effector_offset=2.4; // holes for cable axis, offset from colinear.
+effector_offset=2.0; // holes for cable axis, offset from colinear.
 effector_spacing=63.5; // distance between lines on end effector.
 effector_hinge_thickness=3.0;
 effector_ring_dia=effector_spacing/1.75;
@@ -27,6 +27,7 @@ pulley_outer_dia=14.5; // 13mm really, but bridge can droop..
 pulley_inner_dia=11; // center for spooling
 pulley_bolt_dia=4;
 pulley_offset=0; // move pulley location in or out a bit from center.  Wasn't needed.
+pulley_skew=1.2; // this is a wierd one.  Since the upper pulley doesn't rotate to face the effector, this tries to compensate by skewing the size of the inverted pulley on the effector.
 
 push_rod_dia=7.75;
 push_rod_depth=20;
@@ -66,7 +67,6 @@ end_effector_body();
 //end_effector_joint();
 //push_rod_joint();
 //push_rod_top();
-
 // Drilling template for the AL spool rod
 //spool_rod_template();
 // Assembled end effector
@@ -97,16 +97,19 @@ module end_effector_body() {
 			union() {
 				// base
 				translate([0,0,wall_thickness/2]) hull() for (i=[-120,0,120]) for (j=[-60,60]) {
-					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,0]) cylinder(r=wall_thickness*1.5,h=wall_thickness,center=true);
+					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,0]) cylinder(r=pulley_inner_dia/2,h=wall_thickness,center=true);
 				}
 				// corners
-				translate([0,0,wall_thickness/2]) for (i=[-120,0,120]) hull() for (j=[-60,60]) {
-					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,wall_thickness/2]) cylinder(r=wall_thickness*1.5,h=wall_thickness*1.5,center=true);
+				translate([0,0,wall_thickness]) for (i=[-120,0,120]) for (j=[-60,60]) {
+					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,0]) intersection() {	
+						inverted_pulley();
+						rotate([0,0,j/2]) translate([effector_offset*2,0,0]) cube([pulley_inner_dia,pulley_inner_dia,pulley_inner_dia],center=true);
+					}	
 				}
 				// ribs
 				for (i=[-120,0,120]) hull() {
 					rotate([0,0,i]) translate([effector_ring_dia/2+wall_thickness/2,0,effector_ring_height/2-effector_bearing_dia/2]) cylinder(r=wall_thickness/2,h=effector_ring_height-effector_bearing_dia,center=true);
-					rotate([0,0,i]) translate([effector_spacing/sqrt(3)+wall_thickness,0,wall_thickness/2]) cylinder(r=wall_thickness/2,h=wall_thickness,center=true);
+					rotate([0,0,i]) translate([effector_spacing/sqrt(3)+pulley_inner_dia/2,0,pulley_inner_dia/4+wall_thickness/2]) cylinder(r=wall_thickness/2,h=pulley_inner_dia/2+wall_thickness,center=true);
 				}
 				// ring
 				translate([0,0,effector_ring_height/2]) cylinder(r=effector_ring_dia/2+wall_thickness,h=effector_ring_height,center=true);
@@ -137,7 +140,12 @@ module end_effector_body() {
 	}
 	
 }
-
+module inverted_pulley() {
+	intersection() {
+		translate([0,0,pulley_inner_dia/2]) cylinder(r=pulley_inner_dia/2,h=pulley_inner_dia,center=true);
+		scale([1,pulley_skew,1]) rotate_extrude(convexity = 10) translate([pulley_inner_dia/2+cable_hole_dia/2,0,0]) circle(r=pulley_inner_dia/2);
+	}
+}
 module end_effector_joint() {
 	difference() {
 		union() {
