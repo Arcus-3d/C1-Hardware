@@ -3,23 +3,44 @@
 //
 // darenschwenke@gmail.com
 
-$fn=120; // circle complexity.  Turn down while editing, up while rendering.
-//$fn=60;
+// Uncomment each part here, render, then export.
+
+//top_corner();
+//bottom_corner();
+//stepper_mount();
+//spool_bearing();
+//shaft_coupler();
+//extruder_mount();
+//extruder_top();
+//dampener();
+//end_effector_body();
+//end_effector_joint();
+//push_rod_joint();
+//push_rod_top();
+// Drilling template for the AL spool rod
+//spool_rod_template();
+
+// Assembled end effector for visualization
+end_effector_assembly();
+
+$fn=90; // circle complexity.  Turn down while editing, up while rendering.
+//$fn=30;
 roswell_constant=19.47; // there is a geometric reason this angle works, but I'm too lazy to find it.
 
-effector_offset=2.0; // holes for cable axis, offset from colinear.
+wall_thickness=2.0; // everything is a multiple of this general wall thickness
+
+effector_offset=wall_thickness; // holes for cable axis, offset from colinear.
 effector_spacing=63.5; // distance between lines on end effector.
-effector_hinge_thickness=3.0;
+effector_hinge_thickness=wall_thickness*1.75;
 effector_ring_dia=effector_spacing/1.75;
 effector_ring_height=effector_spacing/5;
-effector_bearing_dia=1.8; // pin for U joint, aka, some printer filament.
+effector_bearing_dia=1.78; // pin for U joint, aka, some printer filament.
 effector_fitting_dia=8; // fits the flange on a push fitting
 effector_fitting_flange_height=2; // fits the flange on a push fitting
 
 cable_hole_dia=1.0; // holes for lines
 
 // corners supports
-wall_thickness=2.0; // supports are 1x this, motor flanges are 2x, a few are 3x.
 support_rod_dia=8.2;
 support_rod_depth=20;
 pulley_thickness=4.5; // 4mm really, but cleanup here is a pita.
@@ -48,29 +69,10 @@ stepper_damper_dia=7; // for no vibration isolators, set to 3.1;
 // shaft coupler from stepper to AL rod.
 coupler_length=25;  
 coupler_d_shaft_dia=5; // stepper shaft dia.
-coupler_shaft_dia=7.79; // 5/16 in AL rod in mm.
+coupler_shaft_dia=7.79; // 5/16in AL rod in mm.
 
 clearance=.20; // all holes are this much larger than setting.  I over-extrude a bit for strength on structural parts.
 extra=.02; // for differencing
-
-// Uncomment each part here, render, then export.
-
-//top_corner();
-//bottom_corner();
-//stepper_mount();
-//spool_bearing();
-//shaft_coupler();
-//extruder_mount();
-//extruder_top();
-//dampener();
-end_effector_body();
-//end_effector_joint();
-//push_rod_joint();
-//push_rod_top();
-// Drilling template for the AL spool rod
-//spool_rod_template();
-// Assembled end effector
-//end_effector_assembly();
 
 
 module end_effector_assembly() {
@@ -97,28 +99,25 @@ module end_effector_body() {
 			union() {
 				// base
 				translate([0,0,wall_thickness/2]) hull() for (i=[-120,0,120]) for (j=[-60,60]) {
-					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,0]) cylinder(r=pulley_inner_dia/2,h=wall_thickness,center=true);
+					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,0]) cylinder(r=pulley_inner_dia/2-wall_thickness/2,h=wall_thickness,center=true);
 				}
 				// corners
-				translate([0,0,wall_thickness]) for (i=[-120,0,120]) for (j=[-60,60]) {
-					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,0]) intersection() {	
-						inverted_pulley();
-						rotate([0,0,j/2]) translate([effector_offset*2,0,0]) cube([pulley_inner_dia,pulley_inner_dia,pulley_inner_dia],center=true);
-					}	
+				for (i=[-120,0,120]) hull() for (j=[-60,60]) {
+					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,pulley_inner_dia/4-extra]) rotate([0,0,j]) translate([effector_offset,0,0]) scale([1,pulley_skew,1]) cylinder(r=pulley_inner_dia/2+wall_thickness/2,h=pulley_inner_dia/2-extra*2,center=true);
 				}
 				// ribs
-				for (i=[-120,0,120]) hull() {
-					rotate([0,0,i]) translate([effector_ring_dia/2+wall_thickness/2,0,effector_ring_height/2-effector_bearing_dia/2]) cylinder(r=wall_thickness/2,h=effector_ring_height-effector_bearing_dia,center=true);
-					rotate([0,0,i]) translate([effector_spacing/sqrt(3)+pulley_inner_dia/2,0,pulley_inner_dia/4+wall_thickness/2]) cylinder(r=wall_thickness/2,h=pulley_inner_dia/2+wall_thickness,center=true);
+				for (i=[-120,0,120]) for(j=[-pulley_inner_dia/2-effector_offset,pulley_inner_dia/2+effector_offset]) hull() {
+					rotate([0,0,i]) translate([effector_ring_dia/2,j,effector_ring_height/2-wall_thickness/2]) cylinder(r=wall_thickness/2,h=effector_ring_height-wall_thickness,center=true);
+					rotate([0,0,i]) translate([effector_spacing/sqrt(3)-wall_thickness,j,pulley_inner_dia/4-wall_thickness/3]) cylinder(r=wall_thickness/2,h=pulley_inner_dia/2-wall_thickness/1.5,center=true);
 				}
 				// ring
-				translate([0,0,effector_ring_height/2]) cylinder(r=effector_ring_dia/2+wall_thickness,h=effector_ring_height,center=true);
+				translate([0,0,effector_ring_height/2]) cylinder(r=effector_ring_dia/2+wall_thickness*1.25,h=effector_ring_height,center=true);
 			}
 			// base center hole
 			translate([0,0,effector_ring_height/2+effector_fitting_flange_height/2]) cylinder(r=effector_ring_dia/2,h=effector_ring_height-effector_fitting_flange_height+extra,center=true);
-			// cable holes
+			// cable holes/virtual pulleys
 			for (i=[-120,0,120]) for (j=[-60,60]) {
-				rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,wall_thickness/2]) rotate([0,0,j]) translate([effector_offset,0,wall_thickness/2]) cylinder(r=cable_hole_dia/2,h=wall_thickness*2+extra,center=true);
+				rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,]) rotate([0,0,j]) translate([effector_offset,0,0]) inverted_pulley();
 			}
 			// wire holes
 			for (i=[0,180]) rotate([0,0,i]) hull() for (j=[15,-15]) {
@@ -141,9 +140,15 @@ module end_effector_body() {
 	
 }
 module inverted_pulley() {
-	intersection() {
-		translate([0,0,pulley_inner_dia/2]) cylinder(r=pulley_inner_dia/2,h=pulley_inner_dia,center=true);
-		scale([1,pulley_skew,1]) rotate_extrude(convexity = 10) translate([pulley_inner_dia/2+cable_hole_dia/2,0,0]) circle(r=pulley_inner_dia/2);
+	scale([1,pulley_skew,1]) union() {
+		difference() {
+			translate([0,0,pulley_inner_dia/2]) cylinder(r=pulley_inner_dia/2+cable_hole_dia,h=pulley_inner_dia,center=true);
+			intersection() {
+				rotate_extrude(convexity = 10) translate([pulley_inner_dia/2+cable_hole_dia/2,0,0]) circle(r=pulley_inner_dia/2);
+				translate([0,0,pulley_inner_dia/2]) cylinder(r=pulley_inner_dia/2+cable_hole_dia,h=pulley_inner_dia+extra,center=true);
+			}
+		}
+		cylinder(r=cable_hole_dia/2,h=wall_thickness,center=true);
 	}
 }
 module end_effector_joint() {
