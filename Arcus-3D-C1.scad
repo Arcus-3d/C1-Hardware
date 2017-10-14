@@ -13,7 +13,7 @@
 //extruder_mount();
 //extruder_top();
 //dampener();
-//end_effector_body();
+end_effector_body();
 //end_effector_joint();
 //push_rod_joint();
 //push_rod_top();
@@ -21,16 +21,17 @@
 //spool_rod_template();
 
 // Assembled end effector for visualization
-end_effector_assembly();
+//end_effector_assembly();
 
 $fn=90; // circle complexity.  Turn down while editing, up while rendering.
 //$fn=30;
+
 roswell_constant=19.47; // there is a geometric reason this angle works, but I'm too lazy to find it.
 
 wall_thickness=2.0; // everything is a multiple of this general wall thickness
 
 effector_offset=wall_thickness; // holes for cable axis, offset from colinear.
-effector_spacing=63.5; // distance between lines on end effector.
+effector_spacing=63.5; // distance between parallel lines on the end effector.
 effector_hinge_thickness=wall_thickness*1.75;
 effector_ring_dia=effector_spacing/1.75;
 effector_ring_height=effector_spacing/5;
@@ -41,18 +42,18 @@ effector_fitting_flange_height=2; // fits the flange on a push fitting
 cable_hole_dia=1.0; // holes for lines
 
 // corners supports
-support_rod_dia=8.2;
-support_rod_depth=20;
+support_rod_dia=8.2; // driveway marker diameter
+support_rod_depth=20; // depth of the pockets for support rods
 pulley_thickness=4.5; // 4mm really, but cleanup here is a pita.
 pulley_outer_dia=14.5; // 13mm really, but bridge can droop..
 pulley_inner_dia=11; // center for spooling
-pulley_bolt_dia=4;
+pulley_bolt_dia=4; // upper pulley bolt dia
 pulley_offset=0; // move pulley location in or out a bit from center.  Wasn't needed.
 pulley_skew=1.2; // this is a wierd one.  Since the upper pulley doesn't rotate to face the effector, this tries to compensate by skewing the size of the inverted pulley on the effector.
 
-push_rod_dia=7.75;
-push_rod_depth=20;
-push_rod_slide=25;
+push_rod_dia=7.75; // garden stake was this dia
+push_rod_depth=20; // depth of pocket for stake
+push_rod_slide=25; // how tall to make the sliding portion
 
 // rollerblade bearing, 8mm id
 spool_bearing_thickness=7;
@@ -64,10 +65,10 @@ stepper_oversize=7; // flange is embiggend this much for clearance.
 stepper_flange_dia=22.5;
 stepper_bolt_spacing=31;
 stepper_bolt_dia=3;
-stepper_damper_dia=7; // for no vibration isolators, set to 3.1;
+stepper_damper_dia=7; // for no vibration isolators, set to 3.1
 
 // shaft coupler from stepper to AL rod.
-coupler_length=25;  
+coupler_length=25; // overall length for coupler.  Each shaft gets half.
 coupler_d_shaft_dia=5; // stepper shaft dia.
 coupler_shaft_dia=7.79; // 5/16in AL rod in mm.
 
