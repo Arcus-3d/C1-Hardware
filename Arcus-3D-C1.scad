@@ -68,7 +68,7 @@ stepper_bolt_dia=3;
 stepper_damper_dia=7; // for no vibration isolators, set to 3.1
 
 // shaft coupler from stepper to AL rod.
-coupler_length=25; // overall length for coupler.  Each shaft gets half.
+coupler_length=18; // overall length for coupler.  Each shaft gets half.
 coupler_d_shaft_dia=5; // stepper shaft dia.
 coupler_shaft_dia=7.79; // 5/16in AL rod in mm.
 
@@ -262,8 +262,10 @@ module shaft_coupler() {
 		cylinder(r=coupler_shaft_dia/2+wall_thickness*1.5+clearance/2,h=coupler_length,center=true);
 		intersection() {
 			cylinder(r=coupler_d_shaft_dia/2+clearance,h=coupler_length+extra,center=true);
-			translate([0,coupler_d_shaft_dia*1/10-clearance,0]) cube([coupler_d_shaft_dia+clearance,coupler_d_shaft_dia*9/10+clearance,coupler_length+extra],center=true);
+			translate([0,coupler_d_shaft_dia*1/11-clearance,0]) cube([coupler_d_shaft_dia+clearance,coupler_d_shaft_dia*9/10+clearance,coupler_length+extra],center=true);
 		}
+		translate([0,0,-coupler_length/2+wall_thickness/2-extra]) cylinder(r1=coupler_d_shaft_dia/2+wall_thickness/4,r2=coupler_d_shaft_dia/2-wall_thickness/2,h=wall_thickness,center=true);
+		translate([0,0,coupler_length/2-wall_thickness/2+extra]) cylinder(r2=coupler_shaft_dia/2+wall_thickness/3,r1=coupler_shaft_dia/2-wall_thickness/2,h=wall_thickness,center=true);
 		translate([0,0,coupler_length/4]) cylinder(r=coupler_shaft_dia/2+clearance,h=coupler_length/2+extra,center=true);
 	}
 }
