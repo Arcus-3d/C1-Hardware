@@ -14,16 +14,18 @@
 //bottom_corner();
 //stepper_mount();
 //spool_bearing();
-//shaft_coupler();
-//extruder_mount();
-//extruder_top();
+shaft_coupler();
 //dampener();
-end_effector_body();
+//end_effector_body();
 //end_effector_joint();
 //push_rod_joint();
 //push_rod_top();
 // Drilling template for the AL spool rod
 //spool_rod_template();
+
+// These are not done yet.
+//extruder_mount();
+//extruder_top();
 
 
 // Assembled end effector for visualization
