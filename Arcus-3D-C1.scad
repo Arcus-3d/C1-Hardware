@@ -1,34 +1,42 @@
 // Arcus-3D-C1 - Cable printer OpenSCAD source
+
+// Licensed under the Creative Commons Attribution-ShareAlike 3.0 Unported License
+// http://creativecommons.org/licenses/by-sa/3.0/
+
+// Project home
 // https://hackaday.io/project/26938
 //
-// darenschwenke@gmail.com
 
-// The parts
+// The parts for rendering
 // Uncomment each part here, save, render, then export to STL.
 
 //top_corner();
 //bottom_corner();
 //stepper_mount();
 //spool_bearing();
-shaft_coupler();
+//shaft_coupler();
 //extruder_mount();
 //extruder_top();
 //dampener();
-//end_effector_body();
+end_effector_body();
 //end_effector_joint();
 //push_rod_joint();
 //push_rod_top();
 // Drilling template for the AL spool rod
 //spool_rod_template();
 
+
 // Assembled end effector for visualization
 //end_effector_assembly();
 
-// Printer compensation
+
+// Extrusion compensation
 // All the holes are this much larger than the actual setting.
+// I tend to over-extrude a bit for strength on structural parts and this compensates.
 // Print the shaft coupler first and if it fits the stepper shaft loosely, decrease this number. 
-// I over-extrude a bit for strength on structural parts and this compensates.
 clearance=.20; 
+
+// Unless you need to change something about the design, nothing below here needs editing.
 
 // Rendering
 $fn=90; // circle complexity.  Turn down while editing, up while rendering.
@@ -274,6 +282,7 @@ module shaft_coupler() {
 		intersection() {
 			cylinder(r=coupler_d_shaft_dia/2+clearance,h=coupler_length+extra,center=true);
 			translate([0,coupler_d_shaft_dia/10,-coupler_length/4+extra*3]) rotate([-0,0,0]) cube([coupler_d_shaft_dia+clearance*2,coupler_d_shaft_dia+clearance*2,coupler_length/2+extra*4],center=true);
+			translate([0,0,-coupler_length/4+extra*3]) cube([coupler_d_shaft_dia+clearance*1.5,coupler_d_shaft_dia+clearance*1.5,coupler_length/2+extra*4],center=true);
 		}
 		translate([0,0,-coupler_length/2+wall_thickness/2-extra]) cylinder(r1=coupler_d_shaft_dia/2+wall_thickness/3,r2=coupler_d_shaft_dia/2-wall_thickness/2,h=wall_thickness,center=true);
 		translate([0,0,coupler_length/2-wall_thickness/2+extra]) cylinder(r2=coupler_shaft_dia/2+wall_thickness/3,r1=coupler_shaft_dia/2-wall_thickness/2,h=wall_thickness,center=true);
@@ -295,12 +304,11 @@ module stepper_mount() {
 			}
 			translate([support_rod_dia/2+(stepper_size+stepper_oversize)/2+wall_thickness,support_rod_depth/2-(spool_bearing_thickness-wall_thickness)/2,wall_thickness/2]) {
 				translate([0,wall_thickness-wall_thickness/2,(stepper_size+stepper_oversize)/2+wall_thickness]) rotate([90,0,0]) {
-				cylinder(r=stepper_flange_dia/2+clearance/2,h=support_rod_depth,center=true);
-				translate([-stepper_bolt_spacing/2,stepper_bolt_spacing/2,0]) cylinder(r=stepper_damper_dia/2+clearance/2,h=support_rod_depth,center=true);
-				translate([stepper_bolt_spacing/2,stepper_bolt_spacing/2,0]) cylinder(r=stepper_damper_dia/2+clearance/2,h=support_rod_depth,center=true);
-				translate([-stepper_bolt_spacing/2,-stepper_bolt_spacing/2,0]) cylinder(r=stepper_damper_dia/2+clearance/2,h=support_rod_depth,center=true);
-				translate([stepper_bolt_spacing/2,-stepper_bolt_spacing/2,0]) cylinder(r=stepper_damper_dia/2+clearance/2,h=support_rod_depth,center=true);
-			}
+					cylinder(r=stepper_flange_dia/2+clearance/2,h=support_rod_depth,center=true);
+					for (i=[-stepper_bolt_spacing/2,stepper_bolt_spacing/2]) for (j=[-stepper_bolt_spacing/2,stepper_bolt_spacing/2]) {
+						translate([i,j,0]) cylinder(r=stepper_damper_dia/2+clearance/2,h=support_rod_depth,center=true);
+					}
+				}
 				translate([(stepper_size+stepper_oversize)/3,-3*wall_thickness,0]) cylinder(r=pulley_bolt_dia/2,h=20,center=true);
 				translate([0,-wall_thickness*3-spool_bearing_thickness,0]) cylinder(r=pulley_bolt_dia/2,h=20,center=true);
 				translate([-(stepper_size+stepper_oversize)/3,-3*wall_thickness,0]) cylinder(r=pulley_bolt_dia/2,h=20,center=true);
