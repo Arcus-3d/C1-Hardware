@@ -14,12 +14,15 @@
 //bottom_corner();
 //stepper_mount();
 //spool_bearing();
-shaft_coupler();
+//shaft_coupler();
 //dampener();
 //end_effector_body();
 //end_effector_joint();
 //push_rod_joint();
 //push_rod_top();
+// push_rod_stop();
+//push_rod_clamp();
+//push_rod_knob();
 // Drilling template for the AL spool rod
 //spool_rod_template();
 
@@ -30,6 +33,9 @@ shaft_coupler();
 
 // Assembled end effector for visualization
 //end_effector_assembly();
+
+// Assembled clamp for visualization
+push_rod_clamp_assembly();
 
 
 // Extrusion compensation
@@ -73,6 +79,7 @@ pulley_skew=1.2; // This tries to compensate for horizontal offset from the pull
 
 // Push rod
 push_rod_dia=7.75; // Garden stake was this dia.
+push_rod_stop_bolt=3.1;
 push_rod_depth=20; // Depth of pocket for stake.
 push_rod_slide=25; // How tall to make the sliding portion.
 
@@ -101,6 +108,11 @@ module end_effector_assembly() {
 	end_effector_body();
 	translate([0,0,effector_ring_height+effector_bearing_dia/2-effector_bearing_dia*2]) end_effector_joint();
 	translate([0,0,push_rod_depth*2+effector_ring_height+effector_bearing_dia/2]) rotate([180,0,0]) push_rod_joint();
+}
+
+module push_rod_clamp_assembly() {
+	push_rod_clamp();
+	translate([0,-15,0]) push_rod_knob();
 }
 
 module spool_rod_template() {
@@ -230,6 +242,36 @@ module push_rod_top() {
 	}
 }
 
+module push_rod_clamp() {
+	difference() {
+		hull() {
+			translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_dia/2+wall_thickness*1.25,h=push_rod_slide/2,center=true);
+			translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness/2,0,push_rod_slide/4]) cube([wall_thickness*4,push_rod_dia+wall_thickness*2.5,push_rod_slide/2],center=true);
+		}
+		translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness/2,0,push_rod_slide/4]) cube([wall_thickness*4+extra,wall_thickness/2,push_rod_slide/2+extra],center=true);
+		translate([0,0,push_rod_slide/4]) cylinder(r=(push_rod_dia/2+clearance),h=push_rod_slide/2+extra,center=true);
+		translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness/2,0,push_rod_slide/4]) {
+			rotate([0,90,90]) cylinder(r=push_rod_stop_bolt/2,h=push_rod_dia+wall_thickness*4,center=true);
+			rotate([90,90,0]) translate([0,0,wall_thickness*3]) cylinder(r=push_rod_stop_bolt+clearance,$fn=6,h=wall_thickness*1.5,center=true);
+		}
+	}
+}
+
+module push_rod_knob() {
+	difference() {
+		union() {
+			hull() {
+				translate([-push_rod_dia,0,push_rod_slide/8]) cylinder(r=wall_thickness*1.25,h=push_rod_slide/4,center=true);
+				translate([push_rod_dia,0,push_rod_slide/8]) cylinder(r=wall_thickness*1.25,h=push_rod_slide/4,center=true);
+			}
+			translate([0,0,push_rod_slide/8]) cylinder(r=push_rod_stop_bolt+clearance+wall_thickness,h=push_rod_slide/4,center=true);
+		
+		}
+		translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_stop_bolt/2+clearance/2,h=push_rod_slide/2+extra,center=true);
+		translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_stop_bolt+clearance,$fn=6,h=push_rod_slide/5,center=true);
+	}
+}
+
 module dampener() {
 	difference() {
 		union() {
@@ -288,7 +330,10 @@ module shaft_coupler() {
 		}
 		translate([0,0,-coupler_length/2+wall_thickness/2-extra]) cylinder(r1=coupler_d_shaft_dia/2+wall_thickness/3,r2=coupler_d_shaft_dia/2-wall_thickness/2,h=wall_thickness,center=true);
 		translate([0,0,coupler_length/2-wall_thickness/2+extra]) cylinder(r2=coupler_shaft_dia/2+wall_thickness/3,r1=coupler_shaft_dia/2-wall_thickness/2,h=wall_thickness,center=true);
-		translate([0,0,coupler_length/4]) cylinder(r=coupler_shaft_dia/2+clearance,h=coupler_length/2+extra,center=true);
+		intersection() {
+			translate([0,0,coupler_length/4]) cylinder(r=coupler_shaft_dia/2+clearance,h=coupler_length/2+extra,center=true);
+			translate([0,0,coupler_length/4+extra]) cube([coupler_shaft_dia+clearance,coupler_shaft_dia+clearance,coupler_length/2+extra*2],center=true);
+		}
 	}
 }
 				
@@ -368,14 +413,12 @@ module top_corner(bottom) {
 					rotate([0,0,30]) cylinder(r=support_rod_depth*1.47,h=wall_thickness,$fn=6,center=true);
 					translate([-50,0,0]) cube([90,100,100],center=true);
 				}
-				//%rotate([60,15,0]) translate([0,0,support_rod_depth*1.44]) rotate([0,90,0]) cylinder(r=support_rod_depth,$fn=3,h=wall_thickness,center=true);
 				rotate([60,-roswell_constant,60]) translate([0,0,support_rod_depth]) rotate([0,90,0]) cylinder(r=support_rod_depth/1.47,$fn=3,h=wall_thickness,center=true);
-				//rotate([60,-roswell_constant,60]) translate([0,0,support_rod_depth]) rotate([0,90,0]) cylinder(r=support_rod_depth/1.5,$fn=3,h=wall_thickness,center=true);
 				rotate([60,roswell_constant,120]) translate([0,0,support_rod_depth]) rotate([0,90,0]) cylinder(r=support_rod_depth/1.47,$fn=3,h=wall_thickness,center=true);
-				rotate([30,roswell_constant,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+wall_thickness,h=support_rod_depth,center=true);
-				rotate([-30,roswell_constant,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+wall_thickness,h=support_rod_depth,center=true);
-				rotate([30,90,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+wall_thickness,h=support_rod_depth,center=true);
-				rotate([-30,90,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+wall_thickness,h=support_rod_depth,center=true);
+				for (i=[-30,30]) {
+					rotate([i,roswell_constant,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+wall_thickness,h=support_rod_depth,center=true);
+					rotate([i,90,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+wall_thickness,h=support_rod_depth,center=true);
+				}
 				sphere(r=support_rod_depth/2+wall_thickness,center=true);
 				if (bottom != 1) {
 					translate([pulley_offset,0,-support_rod_dia/2-wall_thickness+pulley_inner_dia/2.5]) rotate([90,0,0]) cylinder(r=pulley_inner_dia/2.2,h=effector_spacing-pulley_thickness,center=true);
@@ -384,10 +427,10 @@ module top_corner(bottom) {
 				}
 			}
 			translate([0,0,support_rod_dia/2+wall_thickness]) union() {
-				rotate([30,roswell_constant,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+clearance/2,h=support_rod_depth+extra,center=true);
-				rotate([-30,roswell_constant,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+clearance/2,h=support_rod_depth+extra,center=true);
-				rotate([30,90,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+clearance/2,h=support_rod_depth+extra,center=true);
-				rotate([-30,90,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+clearance/2,h=support_rod_depth+extra,center=true);
+				for (i=[-30,30] ) {
+					rotate([i,roswell_constant,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+clearance/2,h=support_rod_depth+extra,center=true);
+					rotate([i,90,0]) translate([0,0,support_rod_depth]) cylinder(r=support_rod_dia/2+clearance/2,h=support_rod_depth+extra,center=true);
+				}
 			}
 			//translate([(-support_rod_dia-wall_thickness)/2-support_rod_dia/2-wall_thickness,0,0]) cube([support_rod_dia+wall_thickness,100,100],center=true);
 			if (bottom != 1) {
@@ -400,11 +443,7 @@ module top_corner(bottom) {
 				rotate([0,14.5,0]) translate([pulley_offset-(pulley_inner_dia+pulley_outer_dia)/4+clearance,0,pulley_inner_dia/2.5+support_rod_depth]) scale([.80,1.0,1]) cylinder(r1=pulley_thickness/2,r2=pulley_thickness*1.8,h=support_rod_depth*2,center=true);
 			}
 		}
-		if (bottom == 1) {
-			rotate([0,0,0]) translate([support_rod_depth,0,0]) cylinder(r=pulley_bolt_dia/2,h=20,center=true);
-			rotate([0,0,60]) translate([support_rod_depth,0,0]) cylinder(r=pulley_bolt_dia/2,h=20,center=true);
-			rotate([0,0,-60]) translate([support_rod_depth,0,0]) cylinder(r=pulley_bolt_dia/2,h=20,center=true);
-		}
+		for (i=[-60,0,60]) rotate([0,0,i]) translate([support_rod_depth,0,0]) cylinder(r=pulley_bolt_dia/2,h=20,center=true);
 		translate([0,0,(-support_rod_dia-wall_thickness)/2]) cube([100,100,support_rod_dia+wall_thickness],center=true);
 	}
 }
