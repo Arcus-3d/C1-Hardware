@@ -10,7 +10,7 @@
 // The parts for rendering
 // Uncomment each part here, save, render, then export to STL.
 
-//top_corner();
+top_corner();
 //bottom_corner();
 //stepper_mount();
 //spool_bearing();
@@ -30,12 +30,14 @@
 //extruder_mount();
 //extruder_top();
 
+// Assembled top corner for visualization
+//top_corner_assembly();
 
 // Assembled end effector for visualization
 //end_effector_assembly();
 
 // Assembled clamp for visualization
-push_rod_clamp_assembly();
+//push_rod_clamp_assembly();
 
 
 // Extrusion compensation
@@ -100,10 +102,17 @@ coupler_length=18; // Overall length for coupler.  Each shaft gets half.
 coupler_d_shaft_dia=5; // Stepper shaft dia.
 coupler_shaft_dia=7.79; // 5/16in AL rod in mm.
 
+// Limit switches
+limit_switch_thickness=6.5;
+
 
 extra=.02; // for differencing
 
-
+module top_corner_assembly() {
+	%top_corner();
+	translate([0,0,support_rod_dia/2+.4]) rotate([90,0,0]) cylinder(r=13/2+clearance,h=4,center=true);
+	translate([-21,0,13.5]) rotate([0,90+roswell_constant,0]) limit_switch();
+}
 module end_effector_assembly() {
 	end_effector_body();
 	translate([0,0,effector_ring_height+effector_bearing_dia/2-effector_bearing_dia*2]) end_effector_joint();
@@ -113,6 +122,32 @@ module end_effector_assembly() {
 module push_rod_clamp_assembly() {
 	push_rod_clamp();
 	translate([0,-15,0]) push_rod_knob();
+}
+module limit_switch_cutout() {
+	union() {
+		hull() {
+			translate([0,0,16.5/2+clearance]) cube([25+clearance*2,6.5+clearance*2,12.5+clearance*2],center=true);
+			translate([2,0,2.5/2+clearance]) cube([27+clearance*2,5.5+clearance*2,3.5+clearance*2],center=true);
+			translate([10,0,18]) rotate([90,0,0]) cylinder(r=5/2,h=5.5+clearance*2,center=true);
+		}
+		translate([9.5/2,0,13.5/2]) rotate([90,0,0]) cylinder(r=1+clearance,h=20,center=true);
+		translate([-9.5/2,0,13.5/2]) rotate([90,0,0]) cylinder(r=1+clearance,h=20,center=true);
+	}
+}
+module limit_switch() {
+	difference() {
+		union() {
+			translate([0,0,15.5/2+clearance]) cube([20+clearance*2,6.5+clearance*2,9.5+clearance*2],center=true);
+			translate([8.2,0,1.5]) cube([1,3,3],center=true);
+			translate([1,0,1.5]) cube([1,3,3],center=true);
+			translate([-8,0,1.5]) cube([1,3,3],center=true);
+			translate([2,0,28/2+clearance]) rotate([0,-8,0]) {
+				cube([17.5,4,.5],center=true);
+				translate([17.5/2-1,0,5/2]) rotate([90,0,0]) cylinder(r=5/2,h=3.1,center=true);
+			}
+			
+		}
+	}
 }
 
 module spool_rod_template() {
@@ -246,10 +281,11 @@ module push_rod_clamp() {
 	difference() {
 		hull() {
 			translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_dia/2+wall_thickness*1.25,h=push_rod_slide/2,center=true);
-			translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness/2,0,push_rod_slide/4]) cube([wall_thickness*4,push_rod_dia+wall_thickness*2.5,push_rod_slide/2],center=true);
+			//translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness*1.25,0,push_rod_slide/4]) cylinder([wall_thickness*4,push_rod_dia+wall_thickness*2.5,push_rod_slide/2],center=true);
+			translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness/2,0,push_rod_slide/4]) rotate([90,0,0]) rotate([0,0,30]) cylinder(r=push_rod_slide/4,h=push_rod_dia+wall_thickness*2.5,center=true);
 		}
-		translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness/2,0,push_rod_slide/4]) cube([wall_thickness*4+extra,wall_thickness/2,push_rod_slide/2+extra],center=true);
-		translate([0,0,push_rod_slide/4]) cylinder(r=(push_rod_dia/2+clearance),h=push_rod_slide/2+extra,center=true);
+		translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness*1.25,0,push_rod_slide/4]) cube([wall_thickness*5+extra,wall_thickness/2,push_rod_slide/2+extra],center=true);
+		translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_dia/2+clearance/2,h=push_rod_slide/2+extra,center=true);
 		translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness/2,0,push_rod_slide/4]) {
 			rotate([0,90,90]) cylinder(r=push_rod_stop_bolt/2,h=push_rod_dia+wall_thickness*4,center=true);
 			rotate([90,90,0]) translate([0,0,wall_thickness*3]) cylinder(r=push_rod_stop_bolt+clearance,$fn=6,h=wall_thickness*1.5,center=true);
@@ -421,10 +457,24 @@ module top_corner(bottom) {
 				}
 				sphere(r=support_rod_depth/2+wall_thickness,center=true);
 				if (bottom != 1) {
-					translate([pulley_offset,0,-support_rod_dia/2-wall_thickness+pulley_inner_dia/2.5]) rotate([90,0,0]) cylinder(r=pulley_inner_dia/2.2,h=effector_spacing-pulley_thickness,center=true);
+					translate([pulley_offset,0,-support_rod_dia/2-wall_thickness+pulley_inner_dia/2.5]) rotate([90,0,0]) {
+						cylinder(r=pulley_inner_dia/2.2,h=effector_spacing-pulley_thickness,center=true);
+						hull() {
+							translate([0,0,0]) cylinder(r=pulley_inner_dia/2.2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
+							translate([0,-7,0]) rotate([0,0,-roswell_constant]) {
+								translate([-21-wall_thickness,14,0]) cylinder(r=pulley_inner_dia/2.2+wall_thickness/2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
+								translate([-21-wall_thickness,-1,0]) cylinder(r=pulley_inner_dia/2.2+wall_thickness/2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
+							}
+							translate([0,9.0,0]) cylinder(r=pulley_inner_dia/2.2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
+						}
+					}
 				} else {
 					translate([0,0,-support_rod_dia/2]) rotate([90,0,0]) cylinder(r=wall_thickness*1.3,h=effector_spacing-pulley_thickness,center=true);
 				}
+			}
+			if (bottom != 1) translate([-21,0,13.5]) rotate([0,90+roswell_constant,0]) {
+				limit_switch_cutout();
+				translate([.7,0,0]) limit_switch_cutout();
 			}
 			translate([0,0,support_rod_dia/2+wall_thickness]) union() {
 				for (i=[-30,30] ) {
