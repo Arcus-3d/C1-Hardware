@@ -260,23 +260,26 @@ module push_rod_joint() {
 	difference() {
 		union() {
 			hull() {
-				translate([0,0,push_rod_depth*3]) rotate([90,0,0]) cylinder(r=effector_ring_height/3,h=jwidth,center=true);
-				translate([0,0,push_rod_depth*2]) rotate([90,0,0]) cylinder(r=effector_ring_height/3,h=jwidth,center=true);
-				translate([0,0,push_rod_depth/2+wall_thickness]) cylinder(r=effector_ring_height/3+wall_thickness,h=extra,center=true);
+				translate([effector_ring_height/4,0,push_rod_depth*3]) rotate([90,0,0]) cylinder(r=effector_ring_height/3,h=jwidth,center=true);
+				translate([effector_ring_height/4,0,push_rod_depth*2]) rotate([90,0,0]) cylinder(r=effector_ring_height/3,h=jwidth,center=true);
 			}
-			translate([0,0,push_rod_depth/2]) cylinder(r=effector_ring_height/3+wall_thickness,h=push_rod_depth,center=true);
 			hull() {
-				translate([-effector_ring_height/2-wall_thickness*1.5,0,wall_thickness]) cylinder(r=effector_ring_height/3,h=wall_thickness*2,center=true);
+				translate([effector_ring_height/4,0,push_rod_depth*2]) rotate([90,0,0]) cylinder(r=effector_ring_height/3,h=jwidth,center=true);
+				translate([0,0,push_rod_depth/1.5-extra]) cylinder(r=effector_ring_height/3+wall_thickness,h=extra,center=true);
+			}
+			translate([0,0,push_rod_depth/3]) cylinder(r=effector_ring_height/3+wall_thickness,h=push_rod_depth/1.5,center=true);
+			hull() {
+				translate([-effector_ring_height/1.5-wall_thickness*1.5,0,wall_thickness]) cylinder(r=effector_ring_height/2.5,h=wall_thickness*2,center=true);
 				translate([effector_ring_height/2+wall_thickness*1.5,0,wall_thickness]) cylinder(r=effector_ring_height/3,h=wall_thickness*2,center=true);
 			}
 		}
 		hull() {
-			translate([0,0,push_rod_depth*3]) cube([push_rod_dia+wall_thickness*2,jwidth-effector_hinge_thickness*2,push_rod_dia*5],center=true);
+			translate([0,0,push_rod_depth*3]) cube([push_rod_dia*5,jwidth-effector_hinge_thickness*2,push_rod_dia*5],center=true);
 			translate([0,0,push_rod_depth+wall_thickness]) rotate([0,90,0]) scale([1.25,.75,1]) cylinder(r=push_rod_dia/2,h=push_rod_dia*2,center=true);
 			//translate([0,0,push_rod_depth*1+wall_thickness*1.5]) rotate([90,0,0]) cube([push_rod_dia+wall_thickness*3,push_rod_dia-wall_thickness,clearance],center=true);
 		}
 		translate([0,0,push_rod_depth/2]) cylinder(r=push_rod_dia/2+clearance,h=push_rod_depth+extra,center=true);
-		translate([0,0,push_rod_depth*3]) rotate([90,0,0]) {
+		translate([effector_ring_height/4,0,push_rod_depth*3]) rotate([90,0,0]) {
 			cylinder(r=effector_bearing_dia/2,h=effector_ring_dia-wall_thickness/1.5-wall_thickness*2-wall_thickness/1.2-clearance*2+extra,center=true);
 			translate([0,0,effector_ring_dia/2-wall_thickness/3-wall_thickness*4-wall_thickness/2.4-clearance*4]) cylinder(r2=effector_bearing_dia/2,r1=effector_bearing_dia,h=effector_bearing_dia,center=true);
 			translate([0,0,-effector_ring_dia/2+wall_thickness/3+wall_thickness*4+wall_thickness/2.4+clearance*4]) cylinder(r1=effector_bearing_dia/2,r2=effector_bearing_dia,h=effector_bearing_dia,center=true);
@@ -284,7 +287,7 @@ module push_rod_joint() {
 			
 		translate([push_rod_dia/2+wall_thickness/1.25,0,push_rod_depth*1.25]) rotate([0,-12.5,0]) cylinder(r=push_rod_dia/2-wall_thickness/2,h=push_rod_depth*2,center=true);	
 		translate([-push_rod_dia/2-wall_thickness/1.25,0,push_rod_depth*1.25]) rotate([0,12.5,0]) cylinder(r=push_rod_dia/2-wall_thickness/2,h=push_rod_depth*2,center=true);	
-		translate([-effector_ring_height/2-wall_thickness*1.5,0,wall_thickness]) cylinder(r=effector_ring_height/3-wall_thickness/2,h=wall_thickness*2+extra,center=true);
+		translate([-effector_ring_height/1.5-wall_thickness*1.5,0,wall_thickness]) cylinder(r=effector_ring_height/2.5-wall_thickness/2,h=wall_thickness*2+extra,center=true);
 		translate([effector_ring_height/2+wall_thickness*1.5,0,wall_thickness]) cylinder(r=effector_ring_height/3-wall_thickness/2,h=wall_thickness*2+extra,center=true);
 	}
 }
