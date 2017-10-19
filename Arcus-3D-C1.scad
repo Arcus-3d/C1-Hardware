@@ -10,7 +10,7 @@
 // The parts for rendering
 // Uncomment each part here, save, render, then export to STL.
 
-//top_corner();
+top_corner();
 //bottom_corner();
 //stepper_mount();
 //spool_bearing();
@@ -22,7 +22,7 @@
 //dampener();
 //end_effector_body();
 //end_effector_joint();
-push_rod_joint();
+//push_rod_joint();
 //push_rod_top();
 // push_rod_stop();
 //push_rod_clamp();
@@ -118,7 +118,7 @@ extra=.02; // for differencing
 module top_corner_assembly() {
 	%top_corner();
 	translate([0,0,support_rod_dia/2+.4]) rotate([90,0,0]) cylinder(r=13/2+clearance,h=4,center=true);
-	translate([-21,0,13.5]) rotate([0,90+roswell_constant,0]) limit_switch();
+	translate([-22,0,13.5]) rotate([0,90+roswell_constant,0]) limit_switch();
 }
 
 module extruder_assembly() {
@@ -157,7 +157,7 @@ module limit_switch() {
 			translate([8.2,0,1.5]) cube([1,3,3],center=true);
 			translate([1,0,1.5]) cube([1,3,3],center=true);
 			translate([-8,0,1.5]) cube([1,3,3],center=true);
-			translate([2,0,28/2+clearance]) rotate([0,-8,0]) {
+			translate([2,0,28/2+clearance]) rotate([0,-10,0]) {
 				cube([17.5,4,.5],center=true);
 				translate([17.5/2-1,0,5/2]) rotate([90,0,0]) cylinder(r=5/2,h=3.1,center=true);
 			}
@@ -503,8 +503,8 @@ module top_corner(bottom) {
 						hull() {
 							translate([0,0,0]) cylinder(r=pulley_inner_dia/2.2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
 							translate([0,-7,0]) rotate([0,0,-roswell_constant]) {
-								translate([-21-wall_thickness,14,0]) cylinder(r=pulley_inner_dia/2.2+wall_thickness/2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
-								translate([-21-wall_thickness,-1,0]) cylinder(r=pulley_inner_dia/2.2+wall_thickness/2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
+								translate([-21.75-wall_thickness,14,0]) cylinder(r=pulley_inner_dia/2.2+wall_thickness/2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
+								translate([-21.75-wall_thickness,-1,0]) cylinder(r=pulley_inner_dia/2.2+wall_thickness/2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
 							}
 							translate([0,9.0,0]) cylinder(r=pulley_inner_dia/2.2,h=limit_switch_thickness+clearance+wall_thickness*2,center=true);
 						}
@@ -513,9 +513,8 @@ module top_corner(bottom) {
 					translate([0,0,-support_rod_dia/2]) rotate([90,0,0]) cylinder(r=wall_thickness*1.3,h=effector_spacing-pulley_thickness,center=true);
 				}
 			}
-			if (bottom != 1) translate([-21,0,13.5]) rotate([0,90+roswell_constant,0]) {
+			if (bottom != 1) translate([-21.75,0,13.5]) rotate([0,90+roswell_constant,0]) {
 				limit_switch_cutout();
-				translate([.7,0,0]) limit_switch_cutout();
 			}
 			translate([0,0,support_rod_dia/2+wall_thickness]) union() {
 				for (i=[-30,30] ) {
