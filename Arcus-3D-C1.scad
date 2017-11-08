@@ -82,8 +82,8 @@ pulley_skew=1.2; // This tries to compensate for horizontal offset from the pull
 
 // Push rod
 push_rod_dia=7.75; // Garden stake was this dia.
-push_rod_stop_bolt=3.1;
-push_rod_depth=20; // Depth of pocket for stake.
+push_rod_stop_bolt_dia=3.1;
+push_rod_depth=20; // Depth of pocket for push-rod.
 push_rod_slide=25; // How tall to make the sliding portion.
 
 // Rollerblade bearing, 8mm id
@@ -99,10 +99,10 @@ stepper_bolt_dia=3; // Inner hole size for dampeners
 stepper_damper_dia=7; // Outer size for dampeners.  For no dampeners, set to 3.1.
 
 // Extruder
-extruder_bolt=4.75; // Extruder tension bolt size
+extruder_bolt_dia=4.75; // Extruder tension bolt size
 extruder_drive_offset=4.5; //Offset from center line of extruder drive gear to center of filament
 extruder_drive_depth=5.4; // Offset from stepper flange to center of filament.
-bowden_tube_dia=4;
+bowden_tube_dia=4; //Outer dia of bowden tube
 
 // Shaft coupler from stepper to AL spooling rod.
 coupler_length=18; // Overall length for coupler.  Each shaft gets half.
@@ -306,14 +306,14 @@ module push_rod_clamp() {
 	difference() {
 		hull() {
 			translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_dia/2+wall_thickness*1.25,h=push_rod_slide/2,center=true);
-			//translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness*1.25,0,push_rod_slide/4]) cylinder([wall_thickness*4,push_rod_dia+wall_thickness*2.5,push_rod_slide/2],center=true);
-			translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness/2,0,push_rod_slide/4]) rotate([90,0,0]) rotate([0,0,30]) cylinder(r=push_rod_slide/4,h=push_rod_dia+wall_thickness*2.5,center=true);
+			//translate([push_rod_dia/2+push_rod_stop_bolt_dia/2+wall_thickness*1.25,0,push_rod_slide/4]) cylinder([wall_thickness*4,push_rod_dia+wall_thickness*2.5,push_rod_slide/2],center=true);
+			translate([push_rod_dia/2+push_rod_stop_bolt_dia/2+wall_thickness/2,0,push_rod_slide/4]) rotate([90,0,0]) rotate([0,0,30]) cylinder(r=push_rod_slide/4,h=push_rod_dia+wall_thickness*2.5,center=true);
 		}
-		translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness*1.25,0,push_rod_slide/4]) cube([wall_thickness*5+extra,wall_thickness/2,push_rod_slide/2+extra],center=true);
+		translate([push_rod_dia/2+push_rod_stop_bolt_dia/2+wall_thickness*1.25,0,push_rod_slide/4]) cube([wall_thickness*5+extra,wall_thickness/2,push_rod_slide/2+extra],center=true);
 		translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_dia/2+clearance/2,h=push_rod_slide/2+extra,center=true);
-		translate([push_rod_dia/2+push_rod_stop_bolt/2+wall_thickness/2,0,push_rod_slide/4]) {
-			rotate([0,90,90]) cylinder(r=push_rod_stop_bolt/2,h=push_rod_dia+wall_thickness*4,center=true);
-			rotate([90,90,0]) translate([0,0,wall_thickness*3]) cylinder(r=push_rod_stop_bolt+clearance,$fn=6,h=wall_thickness*1.5,center=true);
+		translate([push_rod_dia/2+push_rod_stop_bolt_dia/2+wall_thickness/2,0,push_rod_slide/4]) {
+			rotate([0,90,90]) cylinder(r=push_rod_stop_bolt_dia/2,h=push_rod_dia+wall_thickness*4,center=true);
+			rotate([90,90,0]) translate([0,0,wall_thickness*3]) cylinder(r=push_rod_stop_bolt_dia+clearance,$fn=6,h=wall_thickness*1.5,center=true);
 		}
 	}
 }
@@ -325,11 +325,11 @@ module push_rod_knob() {
 				translate([-push_rod_dia,0,push_rod_slide/8]) cylinder(r=wall_thickness*1.25,h=push_rod_slide/4,center=true);
 				translate([push_rod_dia,0,push_rod_slide/8]) cylinder(r=wall_thickness*1.25,h=push_rod_slide/4,center=true);
 			}
-			translate([0,0,push_rod_slide/8]) cylinder(r=push_rod_stop_bolt+clearance+wall_thickness,h=push_rod_slide/4,center=true);
+			translate([0,0,push_rod_slide/8]) cylinder(r=push_rod_stop_bolt_dia+clearance+wall_thickness,h=push_rod_slide/4,center=true);
 		
 		}
-		translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_stop_bolt/2+clearance/2,h=push_rod_slide/2+extra,center=true);
-		translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_stop_bolt+clearance,$fn=6,h=push_rod_slide/5,center=true);
+		translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_stop_bolt_dia/2+clearance/2,h=push_rod_slide/2+extra,center=true);
+		translate([0,0,push_rod_slide/4]) cylinder(r=push_rod_stop_bolt_dia+clearance,$fn=6,h=push_rod_slide/5,center=true);
 	}
 }
 
@@ -359,9 +359,9 @@ module extruder_mount() {
 				for (i=[-1,1]) {
 					translate([i*(stepper_size+stepper_oversize/2+wall_thickness)/2,wall_thickness/2,(stepper_size+stepper_oversize/2)/2]) cylinder(r=wall_thickness/2,h=stepper_size+stepper_oversize/2,center=true);
 				}
-				translate([0,-stepper_size/2+wall_thickness,(stepper_size+stepper_oversize/2)/2]) rotate([0,90,0]) cylinder(r=wall_thickness*2+effector_bearing_dia,h=stepper_size+stepper_oversize/2+wall_thickness*2,center=true);
+				translate([0,-stepper_size/2+wall_thickness*2,(stepper_size+stepper_oversize/2)/2]) rotate([0,90,0]) cylinder(r=wall_thickness*2+effector_bearing_dia,h=stepper_size+stepper_oversize/2+wall_thickness*2,center=true);
 			}
-			translate([0,-stepper_size/2+wall_thickness,(stepper_size+stepper_oversize/2)/2]) rotate([0,90,0]) cylinder(r=wall_thickness*2+effector_bearing_dia,h=stepper_size+stepper_oversize/2+wall_thickness*3,center=true);
+			translate([0,-stepper_size/2+wall_thickness*2,(stepper_size+stepper_oversize/2)/2]) rotate([0,90,0]) cylinder(r=wall_thickness*2+effector_bearing_dia,h=stepper_size+stepper_oversize/2+wall_thickness*3,center=true);
 			//translate([-extruder_drive_offset,0,-(stepper_size/2+stepper_oversize/2)/sqrt(3)-wall_thickness]) hull() {
 			translate([-extruder_drive_offset,0,(stepper_size+stepper_oversize/2)-wall_thickness*5/2]) hull() {
 				translate([0,wall_thickness+extruder_drive_depth,wall_thickness*5/2]) cylinder(r=extruder_drive_depth+wall_thickness/2,h=wall_thickness*4,center=true);
@@ -383,24 +383,25 @@ module extruder_mount() {
 			
 		}
 		translate([0,wall_thickness+wall_thickness*1.35/2,stepper_size/4+wall_thickness*2+extra]) cube([stepper_size,wall_thickness*1.35,stepper_size/2],center=true);
-		translate([stepper_bolt_spacing/2-1,wall_thickness+extruder_drive_depth,wall_thickness]) hull() {
-			cylinder(r=extruder_drive_depth/2,h=wall_thickness*2.5+extra,center=true);
-			translate([2,0,0]) cylinder(r=extruder_drive_depth/2,h=wall_thickness*2.5+extra,center=true);
+		translate([stepper_bolt_spacing/2-1.5,wall_thickness+extruder_drive_depth,wall_thickness]) hull() {
+			cylinder(r=extruder_bolt_dia/2+clearance*2,h=wall_thickness*2.5+extra,center=true);
+			translate([3,0,0]) cylinder(r=extruder_bolt_dia/2+clearance*2,h=wall_thickness*2.5+extra,center=true);
 		}
 			
 		translate([-extruder_drive_offset,wall_thickness+extruder_drive_depth,stepper_size+stepper_oversize/2+wall_thickness]) {
 			cylinder(r=extruder_drive_depth/2,h=wall_thickness*2.5+extra,center=true);
 			translate([0,0,wall_thickness]) cylinder(r1=extruder_drive_depth/2,r2=(extruder_drive_depth+wall_thickness)/2,h=wall_thickness+extra,center=true);
 		}
-		translate([-extruder_drive_offset,wall_thickness+extruder_drive_depth,(stepper_size+stepper_oversize/2)/2]) cylinder(r=bowden_tube_dia/2,h=stepper_size+stepper_oversize/2+wall_thickness*2,center=true);
-		translate([0,-stepper_size/2+wall_thickness,(stepper_size+stepper_oversize/2)/2]) rotate([0,90,0]) cylinder(r=effector_bearing_dia/2+clearance,h=stepper_size+stepper_oversize/2+wall_thickness*3+extra,center=true);
+		translate([-extruder_drive_offset,wall_thickness+extruder_drive_depth,(stepper_size+stepper_oversize/2)/2]) cylinder(r=bowden_tube_dia/2+clearance/2,h=stepper_size+stepper_oversize/2+wall_thickness*2,center=true);
+		translate([0,-stepper_size/2+wall_thickness*1.5,(stepper_size+stepper_oversize/2)/2]) rotate([0,90,0]) cylinder(r=effector_bearing_dia/2+clearance,h=stepper_size+stepper_oversize/2+wall_thickness*3+extra,center=true);
 		translate([0,-stepper_size/2-wall_thickness*2,(stepper_size+stepper_oversize/2)/2]) cube([stepper_size+stepper_oversize/2,stepper_size+stepper_oversize/2+wall_thickness*2,stepper_size+stepper_oversize/2+extra],center=true);
-		translate([-extruder_drive_offset,-(stepper_size/2+stepper_oversize/2)/sqrt(3)-wall_thickness,wall_thickness+extruder_drive_depth]) rotate([90,0,0]) cylinder(r=bowden_tube_dia/2,h=wall_thickness*5+extra*2,center=true);
+		translate([-extruder_drive_offset,-(stepper_size/2+stepper_oversize/2)/sqrt(3)-wall_thickness,wall_thickness+extruder_drive_depth]) rotate([90,0,0]) cylinder(r=bowden_tube_dia/2+clearance/2,h=wall_thickness*5+extra*2,center=true);
 		translate([0,0,(stepper_size+stepper_oversize/2)/2+wall_thickness]) rotate([90,0,0]) cylinder(r=stepper_flange_dia/2+clearance/2,h=wall_thickness*2.5+extra,center=true);
 		translate([0,0,(stepper_size+stepper_oversize/2)/2+wall_thickness]) for (i=[-1,1]) for (j=[-1,1]) translate([i*stepper_bolt_spacing/2,0,j*stepper_bolt_spacing/2]) rotate([90,0,0]) cylinder(r=stepper_bolt_dia/2+clearance/2,h=support_rod_depth,center=true);
-		translate([0,wall_thickness/1.25,(stepper_size+stepper_oversize/2)/2+wall_thickness]) translate([stepper_bolt_spacing/2,0,-stepper_bolt_spacing/2]) rotate([90,0,0]) cylinder(r1=stepper_bolt_dia+clearance/2,r2=stepper_bolt_dia/2+clearance/2,h=wall_thickness/2,center=true);
+		translate([0,wall_thickness/1.25,(stepper_size+stepper_oversize/2)/2+wall_thickness]) translate([stepper_bolt_spacing/2,0,-stepper_bolt_spacing/2]) rotate([90,0,0]) cylinder(r1=stepper_bolt_dia+clearance/2,r2=stepper_bolt_dia/2+clearance/2,h=wall_thickness/1.4,center=true);
 	}
 }
+
 module extruder_spacer() {
 	translate([0,0,stepper_size/2]) difference() {
 		cylinder(r=pulley_bolt_dia/2+wall_thickness+clearance,h=stepper_size,center=true);
@@ -412,15 +413,15 @@ module extruder_knob() {
 	difference() {
 		union() {
 			for (i=[0,60,120,180,240,300]) rotate([0,0,i]) hull() {
-				translate([-(extruder_bolt+wall_thickness),0,push_rod_slide/6]) cylinder(r=wall_thickness/3,h=push_rod_slide/3,center=true);
+				translate([-(extruder_bol_diat+wall_thickness),0,push_rod_slide/6]) cylinder(r=wall_thickness/3,h=push_rod_slide/3,center=true);
 				translate([0,0,push_rod_slide/6]) cylinder(r=wall_thickness/3,h=push_rod_slide/3,center=true);
 			}
-			translate([0,0,push_rod_slide/4]) cylinder(r=extruder_bolt/1.4,h=push_rod_slide/2,center=true);
-			translate([0,0,push_rod_slide/6]) cylinder(r=extruder_bolt+clearance+wall_thickness/2,h=push_rod_slide/3,center=true);
+			translate([0,0,push_rod_slide/4]) cylinder(r=extruder_bolt_dia/1.4,h=push_rod_slide/2,center=true);
+			translate([0,0,push_rod_slide/6]) cylinder(r=extruder_bolt_dia+clearance+wall_thickness/2,h=push_rod_slide/3,center=true);
 		
 		}
-		translate([0,0,push_rod_slide/2]) cylinder(r=extruder_bolt/2+clearance/2,h=push_rod_slide+extra,center=true);
-		translate([0,0,push_rod_slide/12-extra]) cylinder(r=extruder_bolt+clearance,$fn=6,h=push_rod_slide/6,center=true);
+		translate([0,0,push_rod_slide/2]) cylinder(r=extruder_bolt_dia/2+clearance/2,h=push_rod_slide+extra,center=true);
+		translate([0,0,push_rod_slide/12-extra]) cylinder(r=extruder_bolt_dia+clearance,$fn=6,h=push_rod_slide/6,center=true);
 	}
 }
 
