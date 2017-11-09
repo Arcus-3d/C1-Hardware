@@ -15,11 +15,12 @@
 //stepper_mount();
 //spool_bearing();
 //shaft_coupler();
-extruder_mount();
+//extruder_mount();
 //extruder_top();
 //extruder_bottom();
 //extruder_spacer();
-//extruder_knob();
+extruder_knob();
+//extruder_spring_washer();
 //dampener();
 //end_effector_body();
 //end_effector_joint();
@@ -39,7 +40,6 @@ extruder_mount();
 
 // Assembled clamp for visualization
 //push_rod_clamp_assembly();
-
 
 // Extrusion compensation
 // All the holes are this much larger than the actual setting.
@@ -102,7 +102,8 @@ stepper_damper_dia=7; // Outer size for dampeners.  For no dampeners, set to 3.1
 extruder_bolt_dia=4.75; // Extruder tension bolt size
 extruder_drive_offset=4.5; //Offset from center line of extruder drive gear to center of filament
 extruder_drive_depth=5.4; // Offset from stepper flange to center of filament.
-bowden_tube_dia=4; //Outer dia of bowden tube
+bowden_tube_dia=4; //Outer dia of bowden tube.
+extruder_knob_height=7; // Height of ribbed portion of knob.
 
 // Shaft coupler from stepper to AL spooling rod.
 coupler_length=18; // Overall length for coupler.  Each shaft gets half.
@@ -402,29 +403,34 @@ module extruder_mount() {
 	}
 }
 
-module extruder_spacer() {
-	translate([0,0,stepper_size/2]) difference() {
-		cylinder(r=pulley_bolt_dia/2+wall_thickness+clearance,h=stepper_size,center=true);
-		cylinder(r=pulley_bolt_dia/2+clearance/2,h=stepper_size+extra,center=true);
+module extruder_knob() {
+	intersection() {
+		difference() {
+			union() {
+				for (i=[0,60,120,180,240,300]) rotate([0,0,i]) hull() {
+					translate([-(extruder_bolt_dia+wall_thickness),0,extruder_knob_height/2]) cylinder(r=wall_thickness,h=extruder_knob_height,center=true);
+					translate([0,0,extruder_knob_height/2]) cylinder(r=wall_thickness*2.75,h=extruder_knob_height,center=true);
+				}
+				translate([0,0,extruder_knob_height/2+wall_thickness/2]) cylinder(r=extruder_bolt_dia/1.25,h=extruder_knob_height,center=true);
+				translate([0,0,extruder_knob_height/2]) cylinder(r=extruder_bolt_dia+clearance+wall_thickness/1.25,h=extruder_knob_height,center=true);
+			
+			}
+			translate([0,0,extruder_knob_height/2+extruder_bolt_dia*.85+.11]) cylinder(r=extruder_bolt_dia/2+clearance,h=extruder_knob_height,center=true); // the .11 closes off the hole for 1 layer to make a bridge
+			translate([0,0,extruder_bolt_dia*.85/2]) cylinder(r=extruder_bolt_dia+clearance,$fn=6,h=extruder_bolt_dia*.85+extra,center=true);
+		}
+		translate([0,0,extruder_knob_height/2]) scale([1,1,.70]) sphere(r=extruder_bolt_dia+wall_thickness*2,center=true);
 	}
 }
 
-module extruder_knob() {
+module extruder_spring_washer() {
 	difference() {
 		union() {
-			for (i=[0,60,120,180,240,300]) rotate([0,0,i]) hull() {
-				translate([-(extruder_bol_diat+wall_thickness),0,push_rod_slide/6]) cylinder(r=wall_thickness/3,h=push_rod_slide/3,center=true);
-				translate([0,0,push_rod_slide/6]) cylinder(r=wall_thickness/3,h=push_rod_slide/3,center=true);
-			}
-			translate([0,0,push_rod_slide/4]) cylinder(r=extruder_bolt_dia/1.4,h=push_rod_slide/2,center=true);
-			translate([0,0,push_rod_slide/6]) cylinder(r=extruder_bolt_dia+clearance+wall_thickness/2,h=push_rod_slide/3,center=true);
-		
+			translate([0,0,wall_thickness/2]) cylinder(r=extruder_bolt_dia/1.25,h=wall_thickness,center=true);
+			translate([0,0,wall_thickness/4]) cylinder(r=extruder_bolt_dia+wall_thickness,h=wall_thickness/2,center=true);
 		}
-		translate([0,0,push_rod_slide/2]) cylinder(r=extruder_bolt_dia/2+clearance/2,h=push_rod_slide+extra,center=true);
-		translate([0,0,push_rod_slide/12-extra]) cylinder(r=extruder_bolt_dia+clearance,$fn=6,h=push_rod_slide/6,center=true);
+		translate([0,0,wall_thickness/2]) cylinder(r=extruder_bolt_dia/2+clearance*2.5,h=wall_thickness+extra,center=true);
 	}
 }
-
 
 module shaft_coupler() {
 	translate([0,0,coupler_length/2]) difference() {
@@ -445,13 +451,12 @@ module shaft_coupler() {
 				
 module stepper_mount() {
 	translate([-support_rod_dia/4-(stepper_size+stepper_oversize)/2,0,0]) difference() {
-		translate([0,0,-.4]) difference() {
+		translate([0,0,-.4]) difference() { //flat bottoms print better.
 			union() {
 				translate([support_rod_dia/2+(stepper_size+stepper_oversize)/2+wall_thickness,0,wall_thickness/2]) {
 					translate([0,support_rod_depth/2-wall_thickness,(stepper_size+stepper_oversize)/2]) cube([(stepper_size+stepper_oversize)+support_rod_dia,wall_thickness*2,(stepper_size+stepper_oversize)],center=true);
 					translate([0,0,wall_thickness/2]) cube([(stepper_size+stepper_oversize)+support_rod_dia,support_rod_depth,wall_thickness*2],center=true);
-					translate([spool_bearing_dia+wall_thickness+clearance,(stepper_size+stepper_oversize)/6+wall_thickness,(stepper_size+stepper_oversize)/2.4]) rotate([-19,0,0]) cube([wall_thickness*3,(stepper_size+stepper_oversize)/2,(stepper_size+stepper_oversize)],center=true);
-					translate([-spool_bearing_dia-wall_thickness-clearance,(stepper_size+stepper_oversize)/6+wall_thickness,(stepper_size+stepper_oversize)/2.4]) rotate([-19,0,0]) cube([wall_thickness*3,(stepper_size+stepper_oversize)/2,(stepper_size+stepper_oversize)],center=true);
+					for (i=[-1,1]) translate([i*(spool_bearing_dia+wall_thickness+clearance),(stepper_size+stepper_oversize)/6+wall_thickness,(stepper_size+stepper_oversize)/2.4]) rotate([-19,0,0]) cube([wall_thickness*3,(stepper_size+stepper_oversize)/2,(stepper_size+stepper_oversize)],center=true);
 				}
 				translate([0,0,support_rod_dia/2+wall_thickness]) rotate([90,90,0]) cylinder(r=support_rod_dia/2+wall_thickness,h=support_rod_depth,center=true);
 			}
