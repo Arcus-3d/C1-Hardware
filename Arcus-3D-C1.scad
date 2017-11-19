@@ -19,10 +19,10 @@
 //extruder_top();
 //extruder_bottom();
 //extruder_spacer();
-extruder_knob();
+//extruder_knob();
 //extruder_spring_washer();
 //dampener();
-//end_effector_body();
+end_effector_body();
 //end_effector_joint();
 //push_rod_joint();
 //push_rod_top();
@@ -62,16 +62,20 @@ wall_thickness=2.0; // Everything is a multiple of this general wall thickness.
 effector_offset=wall_thickness; // Offset from colinear of neighboring axis cable holes.
 effector_spacing=63.5; // Distance between parallel lines on the end effector.
 effector_hinge_thickness=wall_thickness*1.75; // Hinge thickness at contact point.
-effector_ring_dia=effector_spacing/1.75; // Support ring dia.
-effector_ring_height=effector_spacing/5; //Support ring height.
+effector_ring_dia=effector_spacing/1.42; // Support ring dia.
+effector_ring_height=effector_spacing/4.5; //Support ring height.
 effector_bearing_dia=1.78; // Pin for U joint, aka, some printer filament.
-effector_fitting_dia=8; // Fits the flange on a push fitting.
-effector_fitting_flange_height=2; // Fits the flange on a push fitting.
+effector_hotend_flange_dia=16; // Fits the flange on the hotend.
+effector_hotend_flange_height=2.95; // Fits the flange on the hotend.
+effector_wire_hole_dia=8; // Holes fore wires.
+effector_cooling_fan_height=19.7;
+effector_cooling_fan_seam_dia=3.3;
+effector_cooling_fan_width=15.2;
 
 cable_hole_dia=1.0; // Holes for lines.
 
 // Corners supports
-support_rod_dia=8.2; // Driveway marker diameter.
+support_rod_dia=8.25; // Driveway marker diameter.
 support_rod_depth=20; // Depth of the pockets for support rods.
 pulley_thickness=4.5; // 4mm really, but cleanup here is a pita.
 pulley_outer_dia=14.5; // 13mm really, but bridge can droop.
@@ -124,8 +128,10 @@ module top_corner_assembly() {
 
 module end_effector_assembly() {
 	end_effector_body();
-	translate([0,0,effector_ring_height+effector_bearing_dia/2-effector_bearing_dia*2]) end_effector_joint();
-	translate([0,0,push_rod_depth*2+effector_ring_height+effector_bearing_dia/2]) rotate([180,0,0]) push_rod_joint();
+	translate([0,0,effector_ring_height+effector_bearing_dia/2]) rotate([25,0,0]) {
+		translate([0,0,-effector_bearing_dia*2]) end_effector_joint();
+		translate([-effector_ring_height/4,0,push_rod_depth*3]) rotate([180,0,0]) push_rod_joint();
+	}
 }
 
 module push_rod_clamp_assembly() {
@@ -173,37 +179,52 @@ module spool_rod_template() {
 }
 
 module end_effector_body() {
+//%translate([0,0,16.5/2]) cylinder(r=16/2,h=16.5,center=true);
 	union() {
 		difference() {
 			union() {
-				// base
-				translate([0,0,wall_thickness/2]) hull() for (i=[-120,0,120]) for (j=[-60,60]) {
-					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,0]) cylinder(r=pulley_inner_dia/2-wall_thickness/2,h=wall_thickness,center=true);
+				// cooling_fan_mount
+				hull() {
+					translate([-effector_spacing/sqrt(3)+wall_thickness,0,wall_thickness*2.5]) rotate([0,-20,0]) cube([effector_cooling_fan_height+wall_thickness*4,effector_cooling_fan_width+wall_thickness*2,extra],center=true);	
+					translate([-effector_spacing/sqrt(3)+wall_thickness,0,wall_thickness/2]) cube([effector_cooling_fan_height+wall_thickness*5,effector_cooling_fan_width+wall_thickness*2,wall_thickness],center=true);	
 				}
-				// corners
-				for (i=[-120,0,120]) hull() for (j=[-60,60]) {
-					rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,pulley_inner_dia/4-extra]) rotate([0,0,j]) translate([effector_offset,0,0]) scale([1,pulley_skew,1]) cylinder(r=pulley_inner_dia/2+wall_thickness/2,h=pulley_inner_dia/2-extra*2,center=true);
+				// corners/virtual pulleys
+				difference() {
+					// base
+					union() {
+						translate([0,0,wall_thickness/2]) hull() for (i=[-120,0,120]) for (j=[-60,60]) {
+							rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,0]) cylinder(r=pulley_inner_dia/2-wall_thickness/2,h=wall_thickness,center=true);
+						}
+						for (i=[-120,0,120]) hull() for (j=[-60,60]) {
+							rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,pulley_inner_dia/4-extra]) rotate([0,0,j]) translate([effector_offset,0,0]) scale([1,pulley_skew,1]) cylinder(r=pulley_inner_dia/2+wall_thickness/2,h=pulley_inner_dia/2-extra*2,center=true);
+						}
+					}
+					for (i=[-120,0,120]) for (j=[-60,60]) {
+						rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,]) rotate([0,0,j]) translate([effector_offset,0,0]) inverted_pulley();
+					}
 				}
 				// ribs
-				for (i=[-120,0,120]) for(j=[-pulley_inner_dia/2-effector_offset,pulley_inner_dia/2+effector_offset]) hull() {
-					rotate([0,0,i]) translate([effector_ring_dia/2,j,effector_ring_height/2-wall_thickness/2]) cylinder(r=wall_thickness/2,h=effector_ring_height-wall_thickness,center=true);
-					rotate([0,0,i]) translate([effector_spacing/sqrt(3)-wall_thickness,j,pulley_inner_dia/4-wall_thickness/3]) cylinder(r=wall_thickness/2,h=pulley_inner_dia/2-wall_thickness/1.5,center=true);
+				for (i=[-120,0,120]) for(j=[-pulley_inner_dia/2.25-effector_offset,pulley_inner_dia/2.25+effector_offset]) hull() {
+					rotate([0,0,i]) translate([effector_ring_dia/2,j,effector_ring_height/2-wall_thickness/2]) cylinder(r=wall_thickness/1.5,h=effector_ring_height-wall_thickness,center=true);
+					rotate([0,0,i]) translate([effector_spacing/sqrt(3)-wall_thickness,j,pulley_inner_dia/4-wall_thickness/3]) cylinder(r=wall_thickness/1.5,h=pulley_inner_dia/2-wall_thickness/1.5,center=true);
 				}
 				// ring
 				translate([0,0,effector_ring_height/2]) cylinder(r=effector_ring_dia/2+wall_thickness*1.25,h=effector_ring_height,center=true);
 			}
 			// base center hole
-			translate([0,0,effector_ring_height/2+effector_fitting_flange_height/2]) cylinder(r=effector_ring_dia/2,h=effector_ring_height-effector_fitting_flange_height+extra,center=true);
-			// cable holes/virtual pulleys
-			for (i=[-120,0,120]) for (j=[-60,60]) {
-				rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,]) rotate([0,0,j]) translate([effector_offset,0,0]) inverted_pulley();
-			}
+			translate([0,0,effector_ring_height/2+effector_hotend_flange_height]) cylinder(r=effector_ring_dia/2,h=effector_ring_height+extra,center=true);
 			// wire holes
-			for (i=[0,180]) rotate([0,0,i]) hull() for (j=[15,-15]) {
-				rotate([0,0,j]) translate([effector_ring_dia/3.5,0,0]) cylinder(r=effector_fitting_dia/2.5,h=effector_ring_height,center=true);
+			for (i=[0,180]) rotate([0,-10,i]) hull() for (j=[15,-15]) {
+				rotate([0,0,j]) translate([effector_ring_dia/2.4-effector_wire_hole_dia/2,0,0]) cylinder(r=effector_wire_hole_dia/2.5,h=effector_ring_height,center=true);
+			}
+			translate([-effector_spacing/sqrt(3)-wall_thickness/4,0,wall_thickness*1.5]) {
+				rotate([0,-20,0]) {
+					translate([effector_cooling_fan_height/2,0,0]) cylinder(r=effector_cooling_fan_seam_dia/2,h=wall_thickness*3,center=true);
+					cube([effector_cooling_fan_height,effector_cooling_fan_width,wall_thickness*8+extra],center=true);
+				}
 			}
 			// ring
-			cylinder(r=effector_fitting_dia/2,h=effector_ring_height,center=true);
+			cylinder(r=effector_hotend_flange_dia/2,h=effector_ring_height,center=true);
 			// clearance check
 			// for (i=[-30,30]) translate([0,0,effector_ring_height+effector_bearing_dia/2-effector_bearing_dia*2]) rotate([i,0,0]) end_effector_joint();
 		}
