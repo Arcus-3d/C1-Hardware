@@ -22,7 +22,8 @@
 //extruder_knob();
 //extruder_spring_washer();
 //dampener();
-end_effector_body();
+//end_effector_body();
+effector_blower_nozzle();
 //end_effector_joint();
 //push_rod_joint();
 //push_rod_top();
@@ -45,8 +46,10 @@ end_effector_body();
 // All the holes are this much larger than the actual setting.
 // I tend to over-extrude a bit for strength on structural parts and this compensates.
 // Print the shaft coupler first and if it fits the stepper shaft loosely, decrease this number. 
-clearance=.20; 
-
+clearance=.20;
+// First layer is flat and solid for better FFF printing.  
+// If you want the holes all the way through, set to -.02 
+first_layer_height=.26;
 // Unless you need to change something about the design, nothing below here needs editing.
 
 // Rendering
@@ -71,13 +74,15 @@ effector_ring_height=effector_spacing/5.0; //Support ring height.
 effector_hotend_flange_dia=16; // Fits the flange on the hotend.
 effector_hotend_flange_height=2.95; // Fits the flange on the hotend.
 effector_wire_hole_dia=8; // Holes fore wires.
-effector_blower_height=19.7; // Blower output height.
-effector_blower_seam_dia=3.3; // Blowers have a nasty seam on one edge.
-effector_blower_width=15.2; // Blower output width.
-effector_level_bolt_dia=2.6; // 3mm bolt threaded in
+effector_level_bolt_dia=2.6; // Bolt dia for leveling bolts. 3mm bolt threaded in.
 
-cooling_fan_nozzle_v_offset=44; // Base of effector to build plate
-cooling_fan_nozzle_h_offset=12; // Edge of effector to nozzle.
+effector_blower_height=19.7; // Blower output height.
+effector_blower_width=15.2; // Blower output width.
+effector_blower_mount_dia=7; // Screw mount dia on blower.
+effector_blower_nozzle_length=20; // Length to nozzle bend.
+effector_blower_nozzle_end=15; // Nozzle bend to end.
+effector_blower_nozzle_angle=25; // Angle of the bend from straight.
+effector_blower_bolt_dia=3.82; // Bolt dia for mount. 4mm bolt threaded in.
 
 cable_hole_dia=1.0; // Holes for lines.
 
@@ -139,8 +144,8 @@ module end_effector_assembly() {
 		translate([0,0,-effector_bearing_dia*2]) end_effector_joint();
 		translate([-effector_ring_height/4,0,push_rod_depth*3]) rotate([180,0,0]) push_rod_joint();
 	}
-	%translate([0,0,-cooling_fan_nozzle_v_offset/2]) cylinder(r=22/2,h=cooling_fan_nozzle_v_offset,center=true);
-	rotate([180,0,0]) translate([-effector_spacing/sqrt(3)-wall_thickness/4,0,-wall_thickness*1.5]) rotate([0,20,0]) cooling_fan_nozzle();
+	//%translate([0,0,-effector_blower_nozzle_length/2]) cylinder(r=22/2,h=effector_blower_nozzle_length,center=true);
+	rotate([180,0,0]) translate([-effector_spacing/sqrt(3)-wall_thickness/4,0,-wall_thickness*1.5]) rotate([0,20,0]) effector_blower_nozzle();
 }
 
 module push_rod_clamp_assembly() {
@@ -193,21 +198,24 @@ module end_effector_body() {
 		difference() {
 			union() {
 				// blower_mount
-				hull() {
-					translate([-effector_spacing/sqrt(3)+wall_thickness,0,wall_thickness*2.5]) rotate([0,-20,0]) cube([effector_blower_height+wall_thickness*4,effector_blower_width+wall_thickness*2,extra],center=true);	
-					translate([-effector_spacing/sqrt(3)+wall_thickness,0,wall_thickness/2]) cube([effector_blower_height+wall_thickness*5,effector_blower_width+wall_thickness*2,wall_thickness],center=true);	
+				translate([-effector_ring_dia/2-wall_thickness*.75-effector_hinge_thickness/2-effector_blower_mount_dia/2,0,effector_blower_mount_dia/2+wall_thickness*1.25]) hull() {
+					rotate([90,0,0]) cylinder(h=effector_blower_width+wall_thickness*2.5+clearance,r=effector_blower_bolt_dia/2+wall_thickness*1.25+clearance,center=true);
+					translate([-wall_thickness/4,0,-effector_blower_mount_dia/4-wall_thickness*1.25/2]) cube([effector_blower_mount_dia+wall_thickness/2,effector_blower_width+wall_thickness*2.5+clearance,effector_blower_mount_dia/2+wall_thickness*1.25],center=true);
+					translate([effector_blower_mount_dia/2,0,wall_thickness/4]) cube([effector_blower_mount_dia,effector_blower_width+wall_thickness*2.5+clearance,effector_blower_mount_dia+wall_thickness/2],center=true);
 				}
 				// corners/virtual pulleys
 				difference() {
-					// base
 					union() {
+						// base
 						translate([0,0,wall_thickness/2*1.25]) hull() for (i=[-120,0,120]) for (j=[-60,60]) {
 							rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,0]) rotate([0,0,j]) translate([effector_offset,0,0]) cylinder(r=pulley_inner_dia/2,h=wall_thickness*1.25,center=true);
 						}
+						// corners
 						for (i=[-120,0,120]) hull() for (j=[-60,60]) {
 							rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,pulley_inner_dia/4+wall_thickness/4-extra]) rotate([0,0,j]) translate([effector_offset,0,0]) scale([1,pulley_skew,1]) cylinder(r=pulley_inner_dia/2+wall_thickness/2,h=pulley_inner_dia/2+wall_thickness/2-extra*2,center=true);
 						}
 					}
+					// virtual pulleys
 					for (i=[-120,0,120]) for (j=[-60,60]) {
 						if (render_pulley) rotate([0,0,i]) translate([effector_spacing/sqrt(3),0,wall_thickness/2]) rotate([0,0,j]) translate([effector_offset,0,0]) inverted_pulley();
 					}
@@ -220,23 +228,28 @@ module end_effector_body() {
 				// ring
 				translate([0,0,effector_ring_height/2]) cylinder(r=effector_ring_dia/2+wall_thickness*1.5,h=effector_ring_height,center=true);
 			}
-			for (i=[-120,0,120]) rotate([0,0,i+180]) translate([effector_ring_dia/2-effector_level_bolt_dia/2-clearance,0,wall_thickness*3]) cylinder(r=effector_level_bolt_dia/2,h=wall_thickness*6+extra,center=true);
+			// blower mount
+			translate([-effector_ring_dia/2-wall_thickness*.75-effector_hinge_thickness/2-effector_blower_mount_dia/2,0,effector_blower_mount_dia/2+wall_thickness*1.25]) {
+				rotate([90,0,0]) cylinder(h=effector_blower_width+wall_thickness*2.5+clearance+extra,r=effector_blower_bolt_dia/2,center=true);
+				hull() {
+					rotate([90,0,0]) cylinder(h=effector_blower_width+clearance,r=effector_blower_mount_dia/2+extra,center=true);
+					translate([-effector_blower_mount_dia/2-extra,0,]) cube([effector_blower_mount_dia+extra,effector_blower_width+clearance,effector_blower_mount_dia],center=true);
+					translate([-wall_thickness,0,effector_blower_mount_dia/2]) cube([effector_blower_mount_dia+wall_thickness*2,effector_blower_width+clearance,effector_blower_mount_dia],center=true);
+				}
+			}
+			// leveling bolts
+			for (i=[-120,0,120]) rotate([0,0,i+180]) translate([effector_ring_dia/2-effector_level_bolt_dia/2-clearance,0,wall_thickness*3+first_layer_height]) cylinder(r=effector_level_bolt_dia/2,h=wall_thickness*6,center=true);
 			// base center hole
 			translate([0,0,effector_ring_height/2+effector_hotend_flange_height]) cylinder(r=effector_ring_dia/2,h=effector_ring_height+extra,center=true);
 			// wire holes
 			for (i=[0,180]) rotate([0,-10,i]) hull() for (j=[15,-15]) {
 				rotate([0,0,j]) translate([effector_ring_dia/2.4-effector_wire_hole_dia/2,0,0]) cylinder(r=effector_wire_hole_dia/2.5,h=effector_ring_height,center=true);
 			}
-			translate([-effector_spacing/sqrt(3)-wall_thickness/4,0,wall_thickness*1.5]) {
-				rotate([0,-20,0]) {
-					translate([effector_blower_height/2,0,0]) cylinder(r=effector_blower_seam_dia/2,h=wall_thickness*3,center=true);
-					cube([effector_blower_height+clearance,effector_blower_width+clearance,wall_thickness*8+extra],center=true);
-				}
-			}
 			// ring
 			cylinder(r=effector_hotend_flange_dia/2,h=effector_ring_height,center=true);
 			// clearance check
 			// for (i=[-30,30]) translate([0,0,effector_ring_height+effector_bearing_dia/2-effector_bearing_dia*2]) rotate([i,0,0]) end_effector_joint();
+			// effector_joint cutouts
 			translate([0,0,effector_ring_height+effector_bearing_dia/2]) for (i=[-28,28]) rotate([i,0,0]) cylinder(r=effector_ring_dia/2-effector_hinge_thickness/4,h=effector_hinge_dia,center=true);
 		}
 		// hinges
@@ -245,40 +258,41 @@ module end_effector_body() {
 				rotate([0,0,i]) translate([effector_ring_dia/2+effector_hinge_thickness/2-wall_thickness/2,0,effector_ring_height+effector_bearing_dia/2]) rotate([0,90,0]) cylinder(r=effector_hinge_dia/2,h=effector_hinge_thickness+clearance,center=true);
 				rotate([0,0,i]) translate([effector_ring_dia/2+effector_hinge_thickness/2-wall_thickness/2,0,wall_thickness/2]) cube([effector_hinge_thickness+clearance,effector_ring_height,wall_thickness],center=true);
 			}
-			translate([-effector_ring_dia/2+effector_level_bolt_dia/2-clearance,0,wall_thickness*2]) cylinder(r=effector_level_bolt_dia/2,h=wall_thickness*4+extra,center=true);
+			translate([-effector_ring_dia/2+effector_level_bolt_dia/2-clearance,0,wall_thickness*2+first_layer_height]) cylinder(r=effector_level_bolt_dia/2,h=wall_thickness*4+extra,center=true);
 			translate([0,0,effector_ring_height+effector_bearing_dia/2]) rotate([0,90,0]) cylinder(r=effector_bearing_dia/2,h=effector_ring_dia*2,center=true);
 		}
 	}
 	
 }
 
-module cooling_fan_nozzle() {
+module effector_blower_nozzle() {
 	difference() {
 		union() {
 			hull() {
-				translate([0,0,wall_thickness]) cube([effector_blower_height-clearance,effector_blower_width-clearance,wall_thickness*2],center=true);
-				translate([0,0,cooling_fan_nozzle_v_offset-wall_thickness*2]) rotate([90,0,0]) cylinder(r=effector_blower_height/3-wall_thickness/2,h=effector_blower_width+wall_thickness-clearance,center=true);
+				translate([0,0,wall_thickness]) cube([effector_blower_height+wall_thickness+clearance,effector_blower_width+wall_thickness+clearance,wall_thickness*2],center=true);
+				translate([0,0,effector_blower_nozzle_length-wall_thickness*2]) rotate([90,0,0]) cylinder(r=effector_blower_height/2.5-wall_thickness/2,h=effector_blower_width+wall_thickness-clearance,center=true);
 			}
 			hull() {
-				translate([0,0,cooling_fan_nozzle_v_offset-wall_thickness*2]) rotate([0,-40,0]) {
-					rotate([90,0,0]) cylinder(r=effector_blower_height/3-wall_thickness/2,h=effector_blower_width+wall_thickness-clearance,center=true);
-					translate([cooling_fan_nozzle_h_offset-wall_thickness/2,0,0]) cube([wall_thickness,effector_blower_width+wall_thickness-clearance,effector_blower_height/3],center=true);
+				translate([0,0,effector_blower_nozzle_length-wall_thickness*2]) rotate([0,effector_blower_nozzle_angle-90,0]) {
+					rotate([90,0,0]) cylinder(r=effector_blower_height/2.5-wall_thickness/2,h=effector_blower_width+wall_thickness-clearance,center=true);
+					translate([effector_blower_nozzle_end-wall_thickness/2,0,0]) cube([wall_thickness,effector_blower_width+wall_thickness-clearance,effector_blower_height/3],center=true);
 				}
 			}
 		}
-		translate([0,0,cooling_fan_nozzle_v_offset/3]) rotate([90,0,0]) cylinder(r=effector_bearing_dia/2,h=effector_blower_width*2,center=true);
+		translate([0,0,effector_blower_nozzle_length/3]) rotate([90,0,0]) cylinder(r=effector_bearing_dia/2,h=effector_blower_width*2,center=true);
 		union() {
 			hull() {
-				translate([0,0,wall_thickness]) cube([effector_blower_height-wall_thickness-clearance,effector_blower_width-clearance,wall_thickness*2+extra],center=true);
-				translate([0,0,cooling_fan_nozzle_v_offset-wall_thickness*2]) rotate([90,0,0]) cylinder(r=effector_blower_height/3-wall_thickness/2-wall_thickness/2,h=effector_blower_width-clearance,center=true);
+				translate([0,0,wall_thickness]) cube([effector_blower_height-wall_thickness/2,effector_blower_width-wall_thickness/2,wall_thickness*2+extra],center=true);
+				translate([0,0,effector_blower_nozzle_length-wall_thickness*2]) rotate([90,0,0]) cylinder(r=effector_blower_height/2.5-wall_thickness/2-wall_thickness/2,h=effector_blower_width-clearance,center=true);
 			}
 			hull() {
-				translate([0,0,cooling_fan_nozzle_v_offset-wall_thickness*2]) rotate([0,-40,0]) {
-					rotate([90,0,0]) cylinder(r=effector_blower_height/3-wall_thickness/2-wall_thickness/2,h=effector_blower_width-clearance,center=true);
-					translate([cooling_fan_nozzle_h_offset-wall_thickness/2,0,0]) cube([wall_thickness+extra,effector_blower_width-clearance,effector_blower_height/3-wall_thickness],center=true);
+				translate([0,0,effector_blower_nozzle_length-wall_thickness*2]) rotate([0,effector_blower_nozzle_angle-90,0]) {
+					rotate([90,0,0]) cylinder(r=effector_blower_height/2.5-wall_thickness/2-wall_thickness/2,h=effector_blower_width-clearance,center=true);
+					translate([effector_blower_nozzle_end-wall_thickness/2,0,0]) cube([wall_thickness+extra,effector_blower_width-clearance,effector_blower_height/3-wall_thickness],center=true);
 				}
 			}
 		}
+		translate([0,0,wall_thickness/2]) cube([effector_blower_height+clearance,effector_blower_width+clearance,wall_thickness+extra],center=true);
 	}
 }
 	
@@ -292,7 +306,7 @@ module inverted_pulley() {
 				translate([0,0,pulley_inner_dia/2]) cylinder(r=pulley_inner_dia/2+cable_hole_dia,h=pulley_inner_dia+extra,center=true);
 			}
 		}
-		cylinder(r=cable_hole_dia/2,h=wall_thickness,center=true);
+		cylinder(r=cable_hole_dia/2,h=wall_thickness-first_layer_height*2,center=true);
 	}
 }
 module end_effector_joint() {
