@@ -23,9 +23,9 @@
 //extruder_spring_washer();
 //dampener();
 //end_effector_body();
-effector_blower_nozzle();
+//effector_blower_nozzle();
 //end_effector_joint();
-//push_rod_joint();
+push_rod_joint();
 //push_rod_top();
 // push_rod_stop();
 //push_rod_clamp();
@@ -341,9 +341,9 @@ module push_rod_joint() {
 			}
 			hull() {
 				translate([effector_ring_height/4,0,push_rod_depth*2]) rotate([90,0,0]) cylinder(r=effector_hinge_dia/1.8,h=jwidth,center=true);
-				translate([0,0,push_rod_depth/1.5-extra]) cylinder(r=effector_hinge_dia/2+wall_thickness,h=extra,center=true);
+				translate([0,0,push_rod_depth/1.5-extra]) cylinder(r=push_rod_dia/2+wall_thickness*1.2,h=extra,center=true);
 			}
-			translate([0,0,push_rod_depth/3]) cylinder(r=effector_hinge_dia/2+wall_thickness,h=push_rod_depth/1.5,center=true);
+			translate([0,0,push_rod_depth/3]) cylinder(r=push_rod_dia/2+wall_thickness*1.2,h=push_rod_depth/1.5,center=true);
 			hull() {
 				translate([-effector_ring_height/1.5-wall_thickness*1.5,0,wall_thickness]) cylinder(r=effector_ring_height/2.5,h=wall_thickness*2,center=true);
 				translate([effector_ring_height/2+wall_thickness*1.5,0,wall_thickness]) cylinder(r=effector_hinge_dia/1.8,h=wall_thickness*2,center=true);
