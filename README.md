@@ -2,7 +2,7 @@
 
 ![printer.jpg](printer.jpg)
 
-The [Arcus3D-C1 Cable printer](https://hackaday.io/project/26938) is open source hardware. This github repository hosts the OpenSCAD source in addition to rendered STL images for quick access.
+The [Arcus3D-C1 Cable printer](https://hackaday.io/project/26938) is open source hardware. This github repository hosts the [OpenSCAD](http://www.openscad.org) source and eventually, the rendered STL images for quick access.
 
 ![oshw-logo-200-px.png](oshw-logo-200-px.png)
 
